@@ -1,8 +1,8 @@
 # [Exercise Tracker](https://www.freecodecamp.org/learn/apis-and-microservices/apis-and-microservices-projects/exercise-tracker)
 
-## [Run from repl.it](https://boilerplate-project-exercisetracker.hurricanemark.repl.co)
+## [Run from repl.it](https://microservice-exercise-tracker.hurricanemark.repl.co)
 
-## [Source on github]()
+## [Source on github](https://github.com/hurricanemark/microservice-exercise-tracker.git)
 
 
 ### FCC test structures
