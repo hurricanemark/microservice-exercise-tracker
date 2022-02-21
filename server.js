@@ -7,7 +7,7 @@ let mongoose;
 try {
   mongoose = require("mongoose");
   mongoose
-    .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true})
+    .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log("MongoDB Connected 🍕"));
 
 } catch (e) {
@@ -16,13 +16,13 @@ try {
 
 const exerciseSessionSchema = new mongoose.Schema({
   description: { type: String, required: true },
-  duration: { type: Number, required: true},
-  date: { type: Date, required: true}
+  duration: { type: Number, required: true },
+  date: { type: Date, required: true }
 });
-let ExerciseSession = mongoose.model('ExerciseSession', exerciseSessionSchema); 
+let ExerciseSession = mongoose.model('ExerciseSession', exerciseSessionSchema);
 
 const userSchema = new mongoose.Schema({
-  username: { type: String, required: true},
+  username: { type: String, required: true },
   log: [exerciseSessionSchema]
 });
 let User = mongoose.model('User', userSchema);
@@ -37,7 +37,7 @@ app.get('/', (req, res) => {
 
 // POST to /api/users with form data username to create a new user
 app.post('/api/users', bodyParser.urlencoded({ extended: false }), function(req, res) {
-  console.log(req.body);
+  //console.log(req.body);
   let newUser = new User({
     username: req.body.username,
     log: []
@@ -47,8 +47,8 @@ app.post('/api/users', bodyParser.urlencoded({ extended: false }), function(req,
       console.log(err);
     } else {
       let responseObj = {}
-        responseObj['username'] = result.username;
-        responseObj['_id'] = result.id;
+      responseObj['username'] = result.username;
+      responseObj['_id'] = result.id;
       res.json(responseObj);
     }
   })
@@ -65,8 +65,8 @@ app.get('/api/users', function(req, res) {
 // POST to /api/users/:_id/exercises with form data description, duration, and optionally date. If no date is supplied, the current date will be used.
 app.post('/api/users/:_id/exercises', bodyParser.urlencoded({ extended: false }), function(req, res) {
   let uid = req.params._id
-  console.log(req.body)
-  console.log("HEY look!: ",uid);
+  //console.log(req.body)
+  //console.log("HEY look!: ",uid);
   let newExercise = new ExerciseSession({
     description: req.body.description,
     duration: parseInt(req.body.duration),
@@ -77,19 +77,19 @@ app.post('/api/users/:_id/exercises', bodyParser.urlencoded({ extended: false })
     newExercise.date = new Date().toISOString().substring(0, 10);
   }
   // update
-  User.findByIdAndUpdate(uid, {$push: {'log': newExercise }}, {new: true}, function(err, updatedUser) {
-    if (err) {console.log(err)}
+  User.findByIdAndUpdate(uid, { $push: { 'log': newExercise } }, { new: true }, function(err, updatedUser) {
+    if (err) { console.log(err) }
     else {
-      console.log("UpdatedUSER: ",updatedUser);
+      //console.log("UpdatedUSER: ",updatedUser);
       let responseObj = {}
-      
+
       responseObj['username'] = updatedUser.username;
       responseObj['description'] = newExercise.description;
       responseObj['duration'] = newExercise.duration;
       responseObj['date'] = new Date(newExercise.date).toDateString();
-      //responseObj['date'] = newExercise.date;
+      //responseObj.log[] = newExercise.log;
       responseObj['_id'] = uid;
-
+console.log(responseObj)
       res.json(responseObj);
     }
   })
@@ -98,12 +98,12 @@ app.post('/api/users/:_id/exercises', bodyParser.urlencoded({ extended: false })
 // GET request to /api/users/:_id/logs to retrieve a full exercise log of any user
 app.get('/api/users/:_id/logs', function(req, res) {
   let uid = req.params._id
-  console.log(uid)
+  //console.log(uid)
   User.findById(uid, function(err, foundUser) {
-    if (err) { 
-      console.log(err) 
+    if (err) {
+      console.log(err)
     } else {
-      console.log(foundUser)
+      //console.log(foundUser)
       let responseObj = {}
       responseObj['username'] = foundUser.username;
       responseObj['count'] = foundUser.log.length;
@@ -118,17 +118,20 @@ app.get('/api/users/:id/logs', function(req, res) {
   let uid = req.params.id
   console.log(uid)
   User.findById(uid, function(err, foundUser) {
-    if (err) { 
-      console.log(err) 
+    if (err) {
+      console.log(err)
     } else {
-      console.log("WHA-WHA: ", foundUser.log)
-      res.json(foundUser);
+      //console.log(foundUser)
+      let responseObj = {}
+      responseObj['username'] = foundUser.username;
+      responseObj.log = foundUser.log;
+      res.json(responseObj);
     }
   })
 });
 
 
-app.get('/api/exercise/log', function(req, res){
+app.get('/api/exercise/log', function(req, res) {
   console.log(req.query.userID)
 
   res.json({})
