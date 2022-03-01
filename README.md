@@ -83,6 +83,14 @@ GET user's exercise log: GET /api/users/:_id/logs?[from][&to][&limit]
 from, to = dates (yyyy-mm-dd); limit = number
 ```
 
+
+#### .env Settings
+
+```
+MONGO_URI="mongodb+srv://<userId><password>@cluster0.brf1j.mongodb.net/<database>?"
+PORT=4321
+```
+
 #### nano-id
 
 *Usage*
