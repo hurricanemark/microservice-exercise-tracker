@@ -29,6 +29,7 @@ const userSchema = new mongoose.Schema({
 });
 let User = mongoose.model('User', userSchema);
 
+const defaultDate = () => new Date().toDateString();
 
 app.use(cors())
 app.use(express.static('public'))
@@ -64,37 +65,49 @@ app.get('/api/users', function(req, res) {
 })
 
 
-// POST to /api/users/:_id/exercises with form data description, duration, and optionally date. If no date is supplied, the current date will be used.
+//POST to /api/users/:_id/exercises with form data description, duration, and optionally date. If no date is supplied, the current date will be used.
 app.post('/api/users/:_id/exercises', bodyParser.urlencoded({ extended: false }), function(req, res) {
   let uid = req.params._id
-
+  console.log('exercises-- uid: ',uid)
+  console.log('\n',req.body);
+  
   let newExercise = new ExerciseSession({
+    username: req.body.username,
     description: req.body.description,
     duration: parseInt(req.body.duration),
-    date: new Date(req.body.date).toDateString()
+    date: req.body.date || defaultDate,
+    _id: uid.toString()
   })
   // in case date filled is empty, assign Now to it
-  if (newExercise.date === '') {
-    newExercise.date = new Date().toISOString().substring(0, 10);
+  if (!newExercise.date) {
+    // newExercise.date = new 
+    newExercise.date = new Date().toDateString()
   }
+  
   // update
   User.findByIdAndUpdate(uid, { $push: { 'log': newExercise } }, { new: true }, function(err, updatedUser) {
     if (err) { console.log(err) }
     else {
-      //console.log("UpdatedUSER: ",updatedUser);
+      console.log("UpdatedUSER: ",updatedUser);
+      
       let responseObj = {}
-
+      responseObj['_id'] = uid;
       responseObj['username'] = updatedUser.username;
       responseObj['description'] = newExercise.description;
       responseObj['duration'] = newExercise.duration;
-      responseObj['date'] = new Date(newExercise.date).toDateString();
+      responseObj['date'] = newExercise.date.toDateString() || new date().toDateString();
 
-      responseObj['_id'] = uid;
-      //console.log(responseObj)
+      console.log('\n----------->');
+      console.log(responseObj);
+      console.log('\n<-----------\n');
+      
       res.json(responseObj);
     }
   })
 });
+
+
+
 
 // GET request to /api/users/:_id/logs to retrieve a full exercise log of any user
 app.get('/api/users/:_id/logs', function(req, res) {
@@ -120,13 +133,11 @@ app.get('/api/users/:_id/logs', function(req, res) {
     });
     
     
-    // if (!newSession.date) {
-    //   newSession.date = new Date().toDateString();
-    // } else if (newSession.date) {
-    //   newSession.date = new Date(newSession.date).toDateString();
-    // }
+    if (!newSession.date) {
+      newSession.date = new Date().toDateString();
+    }
     
-    console.log("NewSession date: ", moment(newSession.date).format("YYYY-MM-DD"), " ToDateStr: ", newSession.date);
+    console.log("NewSession date: ", newSession.date);
     
     responseObj['username'] = foundUser.username;
 
@@ -143,7 +154,7 @@ app.get('/api/users/:_id/logs', function(req, res) {
       }
       responseObj.log = responseObj.log.filter((ExerciseSession) => {
         let logDate = new Date(ExerciseSession.date).getTime();
-        responseObj.log.date = moment(newSession.date).format("YYYY-MM-DD");
+        responseObj.log.date = newSession.date.toDateString();
         return logDate >= fromDate && logDate <= toDate;
       });
 
