@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema({
 });
 let User = mongoose.model('User', userSchema);
 
-const defaultDate = () => new Date().toDateString();
+const defaultDate = formatDateString( new Date().toDateString());
 
 app.use(cors())
 app.use(express.static('public'))
@@ -51,7 +51,7 @@ app.post('/api/users', bodyParser.urlencoded({ extended: false }), function(req,
     } else {
       let responseObj = {}
       responseObj['username'] = result.username;
-      responseObj['_id'] = result.id;
+      responseObj['_id'] = result.id.toString();
       res.json(responseObj);
     }
   })
@@ -67,17 +67,16 @@ app.get('/api/users', function(req, res) {
 
 //POST to /api/users/:_id/exercises with form data description, duration, and optionally date. If no date is supplied, the current date will be used.
 app.post('/api/users/:_id/exercises', bodyParser.urlencoded({ extended: false }), function(req, res) {
-  let uid = req.params._id
-  
+  let u_id = req.params._id;
+  let uid = String(u_id);
   let newExercise = new ExerciseSession({
     username: req.body.username,
     description: req.body.description,
     duration: parseInt(req.body.duration),
-    date: req.body.date || defaultDate
+    date: req.body.date
   })
   // in case date filled is empty, assign Now to it
   if (!newExercise.date) {
-    // newExercise.date = new 
     newExercise.date = new Date().toDateString()
   }
   
@@ -86,16 +85,11 @@ app.post('/api/users/:_id/exercises', bodyParser.urlencoded({ extended: false })
     if (err) { console.log(err) }
     else {
       let responseObj = {}
-      responseObj['_id'] = uid.toString();
+      responseObj['_id'] = uid;
       responseObj['username'] = updatedUser.username;
       responseObj['description'] = newExercise.description;
       responseObj['duration'] = newExercise.duration;
       responseObj['date'] = new Date(newExercise.date).toDateString() || new Date().toDateString();
-
-      // console.log('\n----------->');
-      // console.log(responseObj);
-      // console.log('\n<-----------\n');
-      
       res.json(responseObj);
     }
   })
@@ -121,36 +115,14 @@ app.get('/api/users/:_id/logs', function(req, res) {
 
     // reformat log's date:
     for (index = 0; index < foundUser.log.length; index++) {
-      // console.log('===============');
-      // console.log('DEBUG(before) -- logDate: ', foundUser.log[index].date);
       var oridt = foundUser.log[index].date;
       var ndt = formatDateString(oridt);
       foundUser.log[index].date = ndt;
-      // console.log('DEBUG(after) formattedLogDate: ', ndt);
-      // console.log('---> ', foundUser.log[index].date);
-
-      // console.log('===============');
     }
-
-
     
     let responseObj = foundUser;
     responseObj['count'] = foundUser.log.length;
-    
-    // let newSession = new ExerciseSession({
-    //   description: foundUser.log.description,
-    //   duration: parseInt(foundUser.log.duration),
-    //   date: foundUser.log.date
-    // });
-    
-    
-    // if (!newSession.date) {
-    //   newSession.date = new Date().toDateString();
-    // }
-    
     responseObj['username'] = foundUser.username;
-    
-    
 
     let fromDate = new Date().toDateString();
     let toDate = new Date(0).toDateString();
@@ -164,10 +136,8 @@ app.get('/api/users/:_id/logs', function(req, res) {
       responseObj.log = responseObj.log.filter((ExerciseSession) => {
         let logDate = new Date(ExerciseSession.date).getTime();
         responseObj.log.date = foundUser.log.date;
-          
         return logDate >= fromDate && logDate <= toDate;
       });
-      console.log('got from-to: ', from);
     }
 
     if (parseFloat(limit) > 0){
@@ -175,8 +145,12 @@ app.get('/api/users/:_id/logs', function(req, res) {
     }  
     responseObj['count'] = responseObj.log.length;
 
-    
-    console.log(responseObj);
+    for (idx=0; idx < responseObj.log.length; idx++) {
+      if (isNaN(responseObj.log[idx].date) && responseObj.log[idx].date.length == 0) {
+        responseObj.log[idx].date = defaultDate;
+      } 
+    }
+    //console.log(responseObj);
     res.json(responseObj);
   
   })
@@ -185,7 +159,6 @@ app.get('/api/users/:_id/logs', function(req, res) {
 
 function formatDateString(inDateStr) {
   let dateStr = new Date(inDateStr);
-  //console.log('DEBUG: inDateStr: ', inDateStr);
   const days = [
   'Sun',
   'Mon',
@@ -196,7 +169,7 @@ function formatDateString(inDateStr) {
   'Sat'
   ]
   var dayIndex = dateStr.getDay()
-  var dayName = days[dayIndex] // Thu
+  var dayName = days[dayIndex] 
   const months = [
     'January',
     'February',
@@ -216,38 +189,9 @@ function formatDateString(inDateStr) {
   var year = dateStr.getFullYear() // 2019
   var date = dateStr.getDate() // 23
 
-  return dayName + ', ' + [monthName, date, year].join(' ');
+  return [dayName, monthName, date, year].join(' ');
 }
 
-
-app.get('/api/exercise/log', (req, res) => {
-  const {userId, from, to, limit} = req.query;
-  
-  let temp=getExercisesFromUserWithId(userId);
-  
-  if(from){
-    const fromDate= new Date(from)
-    temp = temp.filter(exe => new Date(exe.date) > fromDate);
-  }
-  
-  if(to){
-    const toDate = new Date(to)
-    temp = temp.filter(exe => new Date(exe.date) < toDate);
-  }
-  
-  if(limit){
-    temp = temp.slice(0,limit);
-  }
-  
-  const log = {
-    _id:userId,
-    username:getUsernameById(userId),
-    count:parseFloat(temp.length),
-    log:temp
-  }
-  
-  res.json(log)
-});
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log('Microservice server is listening on port ' + listener.address().port)
