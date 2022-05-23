@@ -4,6 +4,10 @@ const cors = require('cors')
 const bodyParser = require('body-parser');
 
 require('dotenv').config()
+/*
+ * .env file should contain MONGO_URI = "mongodb+srv://[userid]:[passwd]@cluster0.brf1j.mongodb.net/[database]?"
+ */
+
 let mongoose;
 try {
   mongoose = require("mongoose");
