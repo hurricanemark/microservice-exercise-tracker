@@ -43,6 +43,15 @@ Log:
 }
 ```
 
+
+![Main page](./public/MainPage.PNG)
+
+![Add user](./public/AddUser.PNG)
+
+![Add exercise](./public/ExerciseEntry.PNG)
+
+
+
 ## Application features and constraints
 
 - You can POST to /api/users with form data username to create a new user.

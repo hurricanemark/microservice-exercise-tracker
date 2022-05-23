@@ -81,7 +81,8 @@ app.get('/api/users', function(req, res) {
 //POST to /api/users/:_id/exercises with form data description, duration, and optionally date. If no date is supplied, the current date will be used.
 app.post('/api/users/:_id/exercises', bodyParser.urlencoded({ extended: false }), function(req, res) {
   /* convert ObjecId to string */
-  const oid = new Object(req.params._id).valueOf();
+  let uid = req.params._id;
+  const oid = new Object(uid).valueOf();
   
   let newExercise = new ExerciseSession({
     username: req.body.username,
