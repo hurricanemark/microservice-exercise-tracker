@@ -46,7 +46,7 @@ Log:
 
 ![Main page](./public/MainPage.PNG)
 
-![Add user](./public/AddUser.PNG)
+![Add user](./public/MongoDbEntry.PNG)
 
 ![Add exercise](./public/ExerciseEntry.PNG)
 
