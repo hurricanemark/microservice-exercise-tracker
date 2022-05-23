@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 const bodyParser = require('body-parser');
-//const moment = require('moment');
+
 require('dotenv').config()
 let mongoose;
 try {
@@ -39,6 +39,15 @@ app.get('/', (req, res) => {
 
 
 // POST to /api/users with form data username to create a new user
+/*
+{
+  "_id": "6283fb517a0fcc06ac75a665",
+  "username": "123mmaks09",
+  "date": "Sat Dec 03 2022",
+  "duration": 33,
+  "description": "Swimming"
+}
+*/
 app.post('/api/users', bodyParser.urlencoded({ extended: false }), function(req, res) {
   //console.log(req.body);
   let newUser = new User({
@@ -67,8 +76,9 @@ app.get('/api/users', function(req, res) {
 
 //POST to /api/users/:_id/exercises with form data description, duration, and optionally date. If no date is supplied, the current date will be used.
 app.post('/api/users/:_id/exercises', bodyParser.urlencoded({ extended: false }), function(req, res) {
-  let u_id = req.params._id;
-  let uid = String(u_id);
+  /* convert ObjecId to string */
+  const oid = new Object(req.params._id).valueOf();
+  
   let newExercise = new ExerciseSession({
     username: req.body.username,
     description: req.body.description,
@@ -85,7 +95,7 @@ app.post('/api/users/:_id/exercises', bodyParser.urlencoded({ extended: false })
     if (err) { console.log(err) }
     else {
       let responseObj = {}
-      responseObj['_id'] = uid;
+      responseObj['_id'] = oid;
       responseObj['username'] = updatedUser.username;
       responseObj['description'] = newExercise.description;
       responseObj['duration'] = newExercise.duration;
@@ -156,7 +166,9 @@ app.get('/api/users/:_id/logs', function(req, res) {
   })
 });
 
-
+/*
+ * worker function to verify date.toDateString()
+ */
 function formatDateString(inDateStr) {
   let dateStr = new Date(inDateStr);
   const days = [
