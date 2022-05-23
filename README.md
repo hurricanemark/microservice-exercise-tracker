@@ -100,23 +100,4 @@ MONGO_URI="mongodb+srv://<userId><password>@cluster0.brf1j.mongodb.net/<database
 PORT=4321
 ```
 
-#### nano-id
-
-*Usage*
-```
-var nanoId = require('nano-id');
- 
-console.log(nanoId(13));
-// ZyLYucKjwBngU
-```
-
-Verify given argument is a nanoId:
-
-```
-console.log(nanoId.verify('it4wVGtjvm'));
-// true
- 
-console.log(nanoId.verify('invalid-id'));
-// false
-```
  
